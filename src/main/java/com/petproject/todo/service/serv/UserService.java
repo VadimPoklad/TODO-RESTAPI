@@ -1,6 +1,7 @@
 package com.petproject.todo.service.serv;
 
 
+import com.petproject.todo.exception.EntityIllegalArgumentsException;
 import com.petproject.todo.repository.entity.User;
 import com.petproject.todo.repository.entity.User$;
 import com.petproject.todo.repository.repo.RoleRepository;
@@ -46,22 +47,30 @@ public class UserService implements UserDetailsService{
     }
 
     public UserDtoResponse create(UserDtoRequest dto) {
-        User user = mapper.toEntity(dto);
-        user.setAuthorities(Set.of(roleRepository.findByName("USER")));
-        return mapper.toDto(userRepository.save(user));
+        try {
+            User user = mapper.toEntity(dto);
+            user.setAuthorities(Set.of(roleRepository.findByName("USER")));
+            return mapper.toDto(userRepository.save(user));
+        } catch (Exception e) {
+            throw new EntityIllegalArgumentsException(e);
+        }
     }
 
     public UserDtoResponse update(Long id, UserDtoRequest dto) {
-        User user = userRepository.findById(id).orElseThrow();
+        try {
+            User user = userRepository.findById(id).orElseThrow();
 
-        user.setPassword(dto.getPassword());
-        user.setUsername(dto.getUsername());
-        return mapper.toDto(userRepository.save(user));
+            user.setPassword(dto.getPassword());
+            user.setUsername(dto.getUsername());
+            return mapper.toDto(userRepository.save(user));
+        } catch (Exception e) {
+            throw new EntityIllegalArgumentsException(e);
+        }
 
     }
 
     public void deleteById(Long id) {
-        if(userRepository.findById(id).isPresent()){
+        if (userRepository.findById(id).isPresent()) {
             userRepository.deleteById(id);
         }
         throw new RuntimeException();
@@ -69,7 +78,7 @@ public class UserService implements UserDetailsService{
 
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return SingleResult.getSingleResult(jpaStreamer.stream(
-                StreamConfiguration.of(User.class)
+                        StreamConfiguration.of(User.class)
                         .joining(User$.authorities))
                 .filter(user -> user.getUsername().equals(username)));
     }

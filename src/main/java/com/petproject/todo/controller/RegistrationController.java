@@ -4,12 +4,14 @@ import com.petproject.todo.service.dto.request.UserDtoRequest;
 import com.petproject.todo.service.serv.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Objects;
 
@@ -25,12 +27,14 @@ public class RegistrationController {
     }
 
     @GetMapping("/register")
+    @ResponseStatus(HttpStatus.OK)
     public String register(final Model model){
         model.addAttribute("userData", new UserDtoRequest());
         return "register";
     }
 
     @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
     public String userRegistration(final @Valid  UserDtoRequest userDtoRequest, final BindingResult bindingResult, final Model model){
         if(bindingResult.hasErrors()) {
             model.addAttribute("registrationForm", userDtoRequest);

@@ -1,5 +1,6 @@
 package com.petproject.todo.service.serv;
 
+import com.petproject.todo.exception.EntityIllegalArgumentsException;
 import com.petproject.todo.repository.entity.TaskList;
 import com.petproject.todo.repository.entity.User;
 import com.petproject.todo.repository.repo.TaskListRepository;
@@ -45,25 +46,31 @@ public class TaskListService{
 
 
     public TaskListDtoResponse create(String username, TaskListDtoRequest dto) {
-        User user = SingleResult.getSingleResult(
-                jpaStreamer.stream(User.class).filter(u -> u.getUsername().equals(username)));
-        TaskList taskList = mapper.toEntity(dto);
-        taskList.setUser(user);
-        System.out.println(dto);
-        System.out.println(taskList);
-        return mapper.toDto(taskListRepository.save(taskList));
+        try {
+            User user = SingleResult.getSingleResult(
+                    jpaStreamer.stream(User.class).filter(u -> u.getUsername().equals(username)));
+            TaskList taskList = mapper.toEntity(dto);
+            taskList.setUser(user);
+            System.out.println(dto);
+            System.out.println(taskList);
+            return mapper.toDto(taskListRepository.save(taskList));
+        }catch (Exception e){
+            throw new EntityIllegalArgumentsException(e);
+        }
     }
 
 
     public TaskListDtoResponse update(String username, Long id, TaskListDtoRequest dto) {
-        TaskList list = SingleResult.getSingleResult(
-                jpaStreamer.stream(TaskList.class)
-                        .filter(taskList -> taskList.getUser().getUsername().equals(username) &&
-                                Objects.equals(taskList.getId(), id)));
-
-        list.setName(dto.getName());
-        return mapper.toDto(taskListRepository.save(list));
-
+        try {
+            TaskList list = SingleResult.getSingleResult(
+                    jpaStreamer.stream(TaskList.class)
+                            .filter(taskList -> taskList.getUser().getUsername().equals(username) &&
+                                    Objects.equals(taskList.getId(), id)));
+            list.setName(dto.getName());
+            return mapper.toDto(taskListRepository.save(list));
+        }catch (Exception e){
+            throw new EntityIllegalArgumentsException(e);
+        }
     }
 
 
